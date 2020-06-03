@@ -14,7 +14,7 @@ use Symfony\Component\HttpKernel\DependencyInjection\Extension;
  *
  * @author Frédéric Giudicelli
  */
-class DistributedArchitectureExtension extends Extension
+class DistributedArchitectureAdminExtension extends Extension
 {
     public function load(array $configs, ContainerBuilder $container)
     {
