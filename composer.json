@@ -16,7 +16,7 @@
     "require": {
         "php": ">=7.2.5",
         "psr/log": "~1.0",
-        "giudicelli/symfony-distributed-architecture": "dev-process-state-controller",
+        "giudicelli/symfony-distributed-architecture": "dev-master",
         "symfony/http-kernel": "^5",
         "symfony/dependency-injection": "^5",
         "symfony/framework-bundle": "^5",
