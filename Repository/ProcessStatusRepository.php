@@ -38,12 +38,10 @@ class ProcessStatusRepository extends _ProcessStatusRepository
     private function buildQuery(SearchDto $search): QueryBuilder
     {
         $query = $this->createQueryBuilder('ps');
-
-        // Query filters
         $this->buildQueryGroup($query, $search);
-
-        // Status filters
         $this->buildQueryStatus($query, $search);
+        $this->buildQueryCommand($query, $search);
+        $this->buildQueryHost($query, $search);
 
         return $query;
     }
@@ -54,8 +52,8 @@ class ProcessStatusRepository extends _ProcessStatusRepository
             return;
         }
 
-        $query->andWhere('ps.group LIKE :likeQuery')
-            ->setParameter('likeQuery', '%{'.$search->getGroup().'}%')
+        $query->andWhere('ps.groupName LIKE :likeQuery')
+            ->setParameter('likeQuery', '%'.$search->getGroup().'%')
         ;
     }
 
@@ -66,6 +64,26 @@ class ProcessStatusRepository extends _ProcessStatusRepository
         }
         $query->andWhere('ps.status = :status')
             ->setParameter('status', $search->getStatus())
+        ;
+    }
+
+    private function buildQueryHost(QueryBuilder $query, SearchDto $search)
+    {
+        if (!$search->getHost()) {
+            return;
+        }
+        $query->andWhere('ps.host LIKE :likeQuery')
+            ->setParameter('likeQuery', '%'.$search->getHost().'%')
+        ;
+    }
+
+    private function buildQueryCommand(QueryBuilder $query, SearchDto $search)
+    {
+        if (!$search->getCommand()) {
+            return;
+        }
+        $query->andWhere('ps.command LIKE :likeQuery')
+            ->setParameter('likeQuery', '%'.$search->getCommand().'%')
         ;
     }
 }

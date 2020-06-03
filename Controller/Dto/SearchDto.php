@@ -6,6 +6,10 @@ class SearchDto
 {
     private $group;
 
+    private $host;
+
+    private $command;
+
     private $status;
 
     private $offset = 0;
@@ -24,6 +28,30 @@ class SearchDto
     public function setGroup(?string $group): self
     {
         $this->group = $group;
+
+        return $this;
+    }
+
+    public function getCommand(): ?string
+    {
+        return $this->command;
+    }
+
+    public function setCommand(?string $command): self
+    {
+        $this->command = $command;
+
+        return $this;
+    }
+
+    public function getHost(): ?string
+    {
+        return $this->host;
+    }
+
+    public function setHost(?string $host): self
+    {
+        $this->host = $host;
 
         return $this;
     }

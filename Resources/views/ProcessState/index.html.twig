@@ -1,3 +1,4 @@
+{% verbatim %}
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 	<head>
@@ -8,26 +9,93 @@
 		<link rel="stylesheet" href="https://unpkg.com/buefy/dist/buefy.min.css"/>
 		<link rel="stylesheet" href="https://cdn.materialdesignicons.com/5.3.45/css/materialdesignicons.min.css"/>
 		<script src="https://unpkg.com/buefy/dist/buefy.min.js"></script>
-		<!--script src="https://cdn.jsdelivr.net/npm/vue"></script-->
-		<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/vue"></script>
 		<script src="https://cdn.jsdelivr.net/npm/vue-resource"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.26.0/moment-with-locales.min.js"></script>
 	</head>
 	<body>
 		<section class="section">
 	    	<div class="container">
 				<div id="app">
-            		<sda-search-bar @search="setSearch($event)"></sda-search-bar>
+            		<sda-search-bar v-model="search" @input="load()"></sda-search-bar>
+
+					<b-table :data="processes ? processes : []" :bordered="true" :striped="true"
+					:narrowed="false" :hoverable="true" :loading="loading" :mobile-cards="true" :paginated="true"
+					:total="total" :backend-pagination="true" :backend-sorting="true"
+					:per-page="search.limit" :current-page.sync="currentPage"
+					:default-sort-direction="search.direction" :default-sort="search.sort"
+					aria-next-label="Next page" aria-previous-label="Previous page"
+					aria-page-label="Page" aria-current-label="Current page" @sort="setSort"
+					@page-change="load()">
+						<template slot-scope="props">
+
+							<b-table-column field="id" label="ID" width="40" sortable numeric>
+							{{ props.row.id }}
+							</b-table-column>
+
+							<b-table-column field="groupName" label="Group" width="80" sortable>
+							{{ props.row.groupName }}
+
+							</b-table-column>
+							<b-table-column field="groupId" label="Group ID" sortable numeric>
+							{{ props.row.groupId }}
+							</b-table-column>
+
+							<b-table-column field="host" label="Host" sortable>
+							{{ props.row.host }}
+							</b-table-column>
+
+							<b-table-column field="command" label="Command" sortable>
+							{{ props.row.command }}
+							</b-table-column>
+
+							<b-table-column field="startedAt" label="Start time" sortable>
+							{{ props.row.startedAt }}
+							</b-table-column>
+
+							<b-table-column field="stoppedAt" label="Stop time" sortable>
+							{{ props.row.stoppedAt }}
+							</b-table-column>
+
+							<b-table-column field="lastSeenAt" label="Last seen time" sortable>
+							{{ props.row.lastSeenAt }}
+							</b-table-column>
+
+							<b-table-column field="output" label="Last output">
+							{{ props.row.output }}
+							</b-table-column>
+
+							<b-table-column field="status" label="Status" sortable>
+								<b-tag v-if="props.row.status == 'started'" type="is-success">
+									{{ props.row.status }}
+								</b-tag>
+								<b-tag v-else-if="props.row.status == 'timedout'" type="is-warning">
+									{{ props.row.status }}
+								</b-tag>
+								<b-tag v-else-if="props.row.status == 'stopped'" type="is-danger">
+									{{ props.row.status }}
+								</b-tag>
+							</b-table-column>
+						</template>
+
+						<template slot="empty">
+							<section class="section">
+							<div class="content has-text-grey has-text-centered">
+								<p>
+								<b-icon icon="emoticon-sad" size="is-large">
+								</b-icon>
+								</p>
+								<p>Nothing here.</p>
+							</div>
+							</section>
+						</template>
+					</b-table>
 	        	</div>
 			</div>
 		</section>
 
 		<script type="text/x-template" id="sda-search-bar">
 			<div class="columns is-multiline">
-				<div class="column is-2">
-					<b-field>
-						<b-input v-model="search.group" placeholder="Group" type="search" icon="magnify" expanded></b-input>
-					</b-field>
-				</div>
 				<div class="column is-2">
 					<b-select v-model="search.status" placeholder="Status" expanded>
 						<option value=""></option>
@@ -36,33 +104,59 @@
 						<option value="stopped">Stopped</option>
 					</b-select>
 				</div>
-
+				<div class="column is-2">
+					<b-field>
+						<b-input v-model="search.group" placeholder="Group" type="search" icon="select-group" expanded></b-input>
+					</b-field>
+				</div>
+				<div class="column is-2">
+					<b-field>
+						<b-input v-model="search.host" placeholder="Host" type="search" icon="server" expanded></b-input>
+					</b-field>
+				</div>
+				<div class="column is-2">
+					<b-field>
+						<b-input v-model="search.command" placeholder="Command" type="search" icon="bash" expanded></b-input>
+					</b-field>
+				</div>
 				<div class="column is-2">
 					<b-button @click="reset()" icon-left="close"></b-button>
-					<b-button @click="$emit('search', search)" type="is-primary" icon-left="magnify"></b-button>
+					<b-button @click="$emit('input', search)" type="is-primary" icon-left="magnify"></b-button>
 				</div>
 			</div>
 		</script>
 
 		<script type="application/javascript">
+{% endverbatim %}
+const SDA_URLS = {
+	SEARCH: '{{ url('distributed_architecture_admin_search') }}',
+}
+{% verbatim %}
+
 Vue.config.devtools = true;
 Vue.use(Buefy.default);
 
 Vue.component('sda-search-bar', {
 	data: function () {
 		return {
-			search: {
-				status: '',
-				group: '',
-			},
+			search: {},
 		};
+	},
+	props: ['value'],
+	watch: {
+		value: function() {
+			this.search = this.value;
+		}
 	},
 	methods: {
 		reset: function() {
 			this.search = {
 				status: '',
 				group: '',
+				host: '',
+				command: '',
 			};
+			this.$emit('input', this.search);
 		}
 	},
 	template: '#sda-search-bar'
@@ -71,20 +165,71 @@ Vue.component('sda-search-bar', {
 sda_app = new Vue({
 	data: function () {
 		return {
-			search: null
+			search: {
+				status: '',
+				group: '',
+				host: '',
+				command: '',
+				offset: 0,
+				limit: 20,
+				sort: 'id',
+				direction: 'asc',
+			},
+			processes: null,
+			total: 0,
+			loading: false,
 		};
+	},
+	computed: {
+		currentPage: {
+			get: function() {
+			    return (this.search.offset / this.search.limit) + 1;
+			},
+			set: function(page) {
+				this.search.offset = (page - 1) * this.search.limit;
+			}
+		}
 	},
 	methods: {
 		setSearch: function(search) {
-			this.search = search;
-			this.doSearch();
+			this.search.group = search.group;
+			this.search.status = search.status;
+			this.search.offset = 0;
+			this.load();
 		},
-		doSearch: function() {
-
+  		setSort: function(field, order) {
+			this.search.sort = field;
+			this.search.direction = order;
+			this.load();
+		},
+		load: function() {
+			this.loading = true;
+			this.$http.post(SDA_URLS.SEARCH, JSON.stringify(this.search))
+				.then(function(response) {
+					this.processes = response.data.data.processes.map(function(process) {
+						if(process.startedAt) {
+							process.startedAt = moment(process.startedAt).format('LLLL');
+						}
+						if(process.stoppedAt) {
+							process.stoppedAt = moment(process.stoppedAt).format('LLLL');
+						}
+						if(process.lastSeenAt) {
+							process.lastSeenAt = moment(process.lastSeenAt).format('LLLL');
+						}
+						return process;
+					});
+					this.total = response.data.data.total;
+				}).finally(function() {
+					this.loading = false;
+				});
 		}
+	},
+	mounted: function() {
+		this.load();
 	},
 	el: '#app'
 });
   	  </script>
 	</body>
 </html>
+{% endverbatim %}

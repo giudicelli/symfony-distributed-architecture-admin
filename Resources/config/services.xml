@@ -6,6 +6,10 @@
 
     <services>
         <defaults autowire="true" autoconfigure="true"/>
+
+        <service id="giudicelli\DistributedArchitectureAdminBundle\Repository\ProcessStatusRepository" class="giudicelli\DistributedArchitectureAdminBundle\Repository\ProcessStatusRepository" public="true">
+        </service>
+
         <service id="giudicelli\DistributedArchitectureAdminBundle\Controller\ProcessStateController" class="giudicelli\DistributedArchitectureAdminBundle\Controller\ProcessStateController">
         </service>
     </services>

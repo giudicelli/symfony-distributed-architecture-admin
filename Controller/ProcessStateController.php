@@ -19,7 +19,7 @@ class ProcessStateController extends AbstractController
     public function index()
     {
         return $this->render(
-            '@DistributedArchitecture/ProcessState/index.html.twig',
+            '@DistributedArchitectureAdmin/ProcessState/index.html.twig',
         );
     }
 
