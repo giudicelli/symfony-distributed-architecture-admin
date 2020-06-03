@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+		<title>Symfony Distributed Architecture</title>
+		<meta name="robots" content="noindex,nofollow"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" href="https://unpkg.com/buefy/dist/buefy.min.css"/>
+		<link rel="stylesheet" href="https://cdn.materialdesignicons.com/5.3.45/css/materialdesignicons.min.css"/>
+		<script src="https://unpkg.com/buefy/dist/buefy.min.js"></script>
+		<!--script src="https://cdn.jsdelivr.net/npm/vue"></script-->
+		<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/vue-resource"></script>
+	</head>
+	<body>
+		<section class="section">
+	    	<div class="container">
+				<div id="app">
+            		<sda-search-bar @search="setSearch($event)"></sda-search-bar>
+	        	</div>
+			</div>
+		</section>
+
+		<script type="text/x-template" id="sda-search-bar">
+			<div class="columns is-multiline">
+				<div class="column is-2">
+					<b-field>
+						<b-input v-model="search.group" placeholder="Group" type="search" icon="magnify" expanded></b-input>
+					</b-field>
+				</div>
+				<div class="column is-2">
+					<b-select v-model="search.status" placeholder="Status" expanded>
+						<option value=""></option>
+						<option value="started">Started</option>
+						<option value="timedout">Timed out</option>
+						<option value="stopped">Stopped</option>
+					</b-select>
+				</div>
+
+				<div class="column is-2">
+					<b-button @click="reset()" icon-left="close"></b-button>
+					<b-button @click="$emit('search', search)" type="is-primary" icon-left="magnify"></b-button>
+				</div>
+			</div>
+		</script>
+
+		<script type="application/javascript">
+Vue.config.devtools = true;
+Vue.use(Buefy.default);
+
+Vue.component('sda-search-bar', {
+	data: function () {
+		return {
+			search: {
+				status: '',
+				group: '',
+			},
+		};
+	},
+	methods: {
+		reset: function() {
+			this.search = {
+				status: '',
+				group: '',
+			};
+		}
+	},
+	template: '#sda-search-bar'
+});
+
+sda_app = new Vue({
+	data: function () {
+		return {
+			search: null
+		};
+	},
+	methods: {
+		setSearch: function(search) {
+			this.search = search;
+			this.doSearch();
+		},
+		doSearch: function() {
+
+		}
+	},
+	el: '#app'
+});
+  	  </script>
+	</body>
+</html>
