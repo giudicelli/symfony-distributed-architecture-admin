@@ -13,5 +13,13 @@ $ composer require giudicelli/symfony-distributed-architecture-admin
 
 ### Configuration
 
+Add a new route file in "config/routes/sda.yaml". This will allow you to acivate the controller and pick on which URL it will be available.
+
+
 ```yaml
+sda:
+    resource: '@DistributedArchitectureAdminBundle/Resources/config/routes.xml'
+    prefix: /distributed-architecture/
 ```
+
+Now you can access it on the "/distributed-architecture/" URL.
