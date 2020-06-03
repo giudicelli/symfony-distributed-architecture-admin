@@ -10,13 +10,10 @@
             "name": "Frédéric Giudicelli"
         }
     ],
-    "repositories": [
-        { "type": "vcs", "url": "git@github.com:giudicelli/symfony-distributed-architecture.git" }
-    ],    
     "require": {
         "php": ">=7.2.5",
         "psr/log": "~1.0",
-        "giudicelli/symfony-distributed-architecture": "dev-master",
+        "giudicelli/symfony-distributed-architecture": ">=0.1.0",
         "symfony/http-kernel": "^5",
         "symfony/dependency-injection": "^5",
         "symfony/framework-bundle": "^5",
