@@ -202,10 +202,33 @@ sda_app = new Vue({
 			this.search.direction = order;
 			this.load();
 		},
+		displayMessage: function(message, type) {
+			this.$buefy.toast.open({
+				duration: 5000,
+				'message': message,
+				'type': type,
+				position: 'is-top',
+				queue: true,
+			});
+		},
+		handleResponse: function(response) {
+			if(response.data.errors) {
+				this.displayMessage(response.data.errors.join('<br/>'), 'is-danger');
+				return false;
+			}
+			if(response.data.message) {
+				this.displayMessage(response.data.message, 'is-success');
+			}
+			return true;
+		},
 		load: function() {
 			this.loading = true;
 			this.$http.post(SDA_URLS.SEARCH, JSON.stringify(this.search))
 				.then(function(response) {
+					if(!this.handleResponse(response)) {
+						// An error
+						return;
+					}
 					this.processes = response.data.data.processes.map(function(process) {
 						if(process.startedAt) {
 							process.startedAt = moment(process.startedAt).format('LLLL');
@@ -219,7 +242,19 @@ sda_app = new Vue({
 						return process;
 					});
 					this.total = response.data.data.total;
-				}).finally(function() {
+				})
+				.catch(function(response) {
+					if(response.data) {
+						this.handleResponse(response);
+					}
+					else if(response.statusText) {
+						this.displayMessage(response.statusText);
+					}
+					else {
+						this.displayMessage('Unknown error');
+					}
+				})
+				.finally(function() {
 					this.loading = false;
 				});
 		}
