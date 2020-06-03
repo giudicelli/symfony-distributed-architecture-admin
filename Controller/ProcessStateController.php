@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 
 /**
- * IsGranted("ROLE_ADMIN", message="Access denied.").
+ * @IsGranted("ROLE_ADMIN", message="Access denied.").
  */
 class ProcessStateController extends AbstractController
 {
