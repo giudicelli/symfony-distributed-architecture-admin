@@ -11,6 +11,8 @@ $ composer require giudicelli/symfony-distributed-architecture-admin
 
 ## Using
 
+This controller allows you to see what's happening with your [symfony-distributed-architecture](https://github.com/giudicelli/symfony-distributed-architecture) processes. To access it, you will need to be connected as an admin.
+
 ### Configuration
 
 Add a new route file in "config/routes/sda.yaml". This will allow you to acivate the controller and pick on which URL it will be available.
