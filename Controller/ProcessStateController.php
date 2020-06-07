@@ -2,20 +2,44 @@
 
 namespace giudicelli\DistributedArchitectureAdminBundle\Controller;
 
+use giudicelli\DistributedArchitectureAdminBundle\Controller\Dto\CommandDto;
 use giudicelli\DistributedArchitectureAdminBundle\Controller\Dto\SearchDto;
 use giudicelli\DistributedArchitectureAdminBundle\Controller\Http\ApiResponse;
 use giudicelli\DistributedArchitectureAdminBundle\Repository\ProcessStatusRepository;
+use giudicelli\DistributedArchitectureBundle\Repository\MasterCommandRepository;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Symfony\Component\Validator\Exception\ValidatorException;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
+ * The controller to administer the master process.
+ *
+ * @author Frédéric Giudicelli
+ *
  * @IsGranted("ROLE_ADMIN", message="Access denied.").
  */
 class ProcessStateController extends AbstractController
 {
+    private $validator;
+
+    private $processStatusRepository;
+
+    private $masterCommandRepository;
+
+    public function __construct(
+        ValidatorInterface $validator,
+        ProcessStatusRepository $processStatusRepository,
+        MasterCommandRepository $masterCommandRepository
+    ) {
+        $this->validator = $validator;
+        $this->processStatusRepository = $processStatusRepository;
+        $this->masterCommandRepository = $masterCommandRepository;
+    }
+
     public function index()
     {
         return $this->render(
@@ -23,7 +47,7 @@ class ProcessStateController extends AbstractController
         );
     }
 
-    public function search(Request $request, ProcessStatusRepository $processStatusRepository)
+    public function search(Request $request)
     {
         $options = [
             AbstractNormalizer::ALLOW_EXTRA_ATTRIBUTES => false,
@@ -34,10 +58,32 @@ class ProcessStateController extends AbstractController
 
         return $this->json(
             [
-                'processes' => $processStatusRepository->findBySearchRequest($search),
-                'total' => $processStatusRepository->countBySearchRequest($search),
+                'processes' => $this->processStatusRepository->findBySearchRequest($search),
+                'total' => $this->processStatusRepository->countBySearchRequest($search),
             ]
         );
+    }
+
+    public function command(Request $request)
+    {
+        $options = [
+            AbstractNormalizer::ALLOW_EXTRA_ATTRIBUTES => false,
+        ];
+        // Populate values
+        /** @var CommandDto */
+        $command = $this->container->get('serializer')->deserialize($request->getContent(), CommandDto::class, 'json', $options);
+        $violations = $this->validator->validate($command);
+        if (count($violations)) {
+            throw new ValidatorException($violations);
+        }
+
+        $this->masterCommandRepository->create(
+            $command->getCommand(),
+            $command->getGroupName(),
+            $command->getParams()
+        );
+
+        return $this->json([]);
     }
 
     protected function json($data, int $status = 200, array $headers = [], array $context = []): JsonResponse

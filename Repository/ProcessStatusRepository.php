@@ -4,28 +4,51 @@ namespace giudicelli\DistributedArchitectureAdminBundle\Repository;
 
 use Doctrine\ORM\QueryBuilder;
 use giudicelli\DistributedArchitectureAdminBundle\Controller\Dto\SearchDto;
-use giudicelli\DistributedArchitectureBundle\Entity\ProcessStatus;
 use giudicelli\DistributedArchitectureBundle\Repository\ProcessStatusRepository as _ProcessStatusRepository;
 
 /**
- * @method null|ProcessStatus find($id, $lockMode = null, $lockVersion = null)
- * @method null|ProcessStatus findOneBy(array $criteria, array $orderBy = null)
- * @method ProcessStatus[]    findAll()
- * @method ProcessStatus[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @author Frédéric Giudicelli
+ *
+ * {@inheritdoc}
  */
 class ProcessStatusRepository extends _ProcessStatusRepository
 {
+    /**
+     * Return all statuses matching a search.
+     *
+     * @param SearchDto $search The search
+     *
+     * @return null|array<ProcessStatus> The list of matching statuses or null if there is none
+     */
     public function findBySearchRequest(SearchDto $search): ?array
     {
-        return $this->buildQuery($search)
-            ->setMaxResults($search->getLimit())
-            ->setFirstResult($search->getOffset())
-            ->orderBy('ps.'.$search->getSort(), $search->getDirection())
+        $query = $this->buildQuery($search);
+
+        if ($search->getLimit()) {
+            $query
+                ->setMaxResults($search->getLimit())
+                ->setFirstResult($search->getOffset())
+            ;
+        }
+        if ($search->getSort()) {
+            $query
+                ->orderBy('ps.'.$search->getSort(), $search->getDirection())
+            ;
+        }
+
+        return $query
             ->getQuery()
             ->getResult()
         ;
     }
 
+    /**
+     * Return the total number of statuses matching a search.
+     *
+     * @param SearchDto $search The search
+     *
+     * @return int The number of statuses
+     */
     public function countBySearchRequest(SearchDto $search): int
     {
         return $this->buildQuery($search)

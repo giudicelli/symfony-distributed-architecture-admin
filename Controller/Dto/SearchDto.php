@@ -2,6 +2,11 @@
 
 namespace giudicelli\DistributedArchitectureAdminBundle\Controller\Dto;
 
+/**
+ * A DTO respresenting a search query.
+ *
+ * @author Frédéric Giudicelli
+ */
 class SearchDto
 {
     private $group;

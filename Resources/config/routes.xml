@@ -9,4 +9,7 @@
 
     <route id="distributed_architecture_admin_search" controller="giudicelli\DistributedArchitectureAdminBundle\Controller\ProcessStateController::search" path="/search" methods="POST">
     </route>
+
+    <route id="distributed_architecture_admin_command" controller="giudicelli\DistributedArchitectureAdminBundle\Controller\ProcessStateController::command" path="/command" methods="POST">
+    </route>
 </routes>

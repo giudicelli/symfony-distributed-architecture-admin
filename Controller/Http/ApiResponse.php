@@ -4,6 +4,11 @@ namespace giudicelli\DistributedArchitectureAdminBundle\Controller\Http;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
 
+/**
+ * An API json response.
+ *
+ * @author Frédéric Giudicelli
+ */
 class ApiResponse extends JsonResponse
 {
     /**
@@ -19,9 +24,12 @@ class ApiResponse extends JsonResponse
     /**
      * Format the API response.
      *
-     * @param mixed $data
+     * @param string $message A message
+     * @param mixed  $data    The actual data to send back
+     * @param array  $errors  Some errors
+     * @param bool   $json    Is data already json encoded?
      *
-     * @return array
+     * @return string The json encoded response
      */
     private function format(string $message, $data = null, array $errors = [], bool $json)
     {

@@ -10,23 +10,52 @@
 		<link rel="stylesheet" href="https://cdn.materialdesignicons.com/5.3.45/css/materialdesignicons.min.css"/>
 		<script src="https://unpkg.com/buefy/dist/buefy.min.js"></script>
 		<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+		<!--script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script-->
 		<script src="https://cdn.jsdelivr.net/npm/vue-resource"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.26.0/moment-with-locales.min.js"></script>
+		<style type="text/css">
+			.dropdown.is-expanded.is-mobile-modal .dropdown-menu {
+				max-width: 300px;
+			}
+			.dropdown.is-expanded .dropdown-menu {
+				width: 300px;				
+			}
+		</style>
 	</head>
 	<body>
 		<section class="section">
 	    	<div class="container">
 				<div id="app">
-            		<sda-search-bar v-model="search" @input="load()"></sda-search-bar>
+					<b-message v-if="!isMasterRunning" type="is-warning" has-icon>
+						The service is not running.
+					</b-message>
+
+					<div class="tile is-ancestor">
+						<div class="tile is-parent">
+							<div class="tile is-child box">
+								<sda-search-bar v-model="search" @input="load()"></sda-search-bar>
+							</div>
+						</div>
+						<div class="tile is-4 is-parent">
+							<div class="tile is-child box">
+								<sda-state v-if="filteredAllProcesses" :processes="filteredAllProcesses" :disabled="!isMasterRunning" @start-group="startGroup($event)" @stop-group="stopGroup($event)" @start-all="startAll()" @stop-all="stopAll()"></sda-state>
+							</div>
+						</div>
+						<div class="tile is-2 is-parent">
+							<div class="tile is-child box">
+								<b-button :disabled="!isMasterRunning" icon-left="stop-circle" expanded type="is-danger" @click="stop()">Stop service</b-button>
+							</div>
+						</div>
+					</div>
 
 					<b-table :data="processes ? processes : []" :bordered="true" :striped="true"
-					:narrowed="false" :hoverable="true" :loading="loading" :mobile-cards="true" :paginated="true"
-					:total="total" :backend-pagination="true" :backend-sorting="true"
-					:per-page="search.limit" :current-page.sync="currentPage"
-					:default-sort-direction="search.direction" :default-sort="search.sort"
-					aria-next-label="Next page" aria-previous-label="Previous page"
-					aria-page-label="Page" aria-current-label="Current page" @sort="setSort"
-					@page-change="load()">
+						:narrowed="false" :hoverable="true" :loading="loading" :mobile-cards="true" :paginated="true"
+						:total="total" :backend-pagination="true" :backend-sorting="true"
+						:per-page="search.limit" :current-page.sync="currentPage"
+						:default-sort-direction="search.direction" :default-sort="search.sort"
+						aria-next-label="Next page" aria-previous-label="Previous page"
+						aria-page-label="Page" aria-current-label="Current page" @sort="setSort"
+						@page-change="load()">
 						<template slot-scope="props">
 
 							<b-table-column field="id" label="ID" width="40" sortable numeric>
@@ -96,7 +125,7 @@
 
 		<script type="text/x-template" id="sda-search-bar">
 			<div class="columns is-multiline">
-				<div class="column is-2">
+				<div class="column is-3">
 					<b-select v-model="search.status" placeholder="Status" expanded>
 						<option value=""></option>
 						<option value="started">Started</option>
@@ -104,24 +133,148 @@
 						<option value="stopped">Stopped</option>
 					</b-select>
 				</div>
-				<div class="column is-2">
+				<div class="column is-3">
 					<b-field>
 						<b-input v-model="search.group" placeholder="Group" type="search" icon="select-group" expanded></b-input>
 					</b-field>
 				</div>
-				<div class="column is-2">
+				<div class="column is-3">
 					<b-field>
 						<b-input v-model="search.host" placeholder="Host" type="search" icon="server" expanded></b-input>
 					</b-field>
 				</div>
-				<div class="column is-2">
+				<div class="column is-3">
 					<b-field>
 						<b-input v-model="search.command" placeholder="Command" type="search" icon="bash" expanded></b-input>
 					</b-field>
 				</div>
-				<div class="column is-2">
+				<div class="column is-3">
 					<b-button @click="reset()" icon-left="close"></b-button>
 					<b-button @click="$emit('input', search)" type="is-primary" icon-left="magnify"></b-button>
+				</div>
+			</div>
+		</script>
+
+		<script type="text/x-template" id="sda-state">
+			<div>
+				<div class="columns">
+					<div class="column">
+						<b-dropdown position="is-bottom-left" append-to-body aria-role="menu" can-close expanded>
+							<b-button type="is-primary" slot="trigger" icon-right="menu-down" expanded>
+								Groups
+							</b-button>
+							<b-dropdown-item
+								aria-role="menu-item"
+								:focusable="false"
+								custom>
+								<b-collapse v-for="(group, groupName) in groupsState" :open="false" class="card" animation="slide">
+									<div
+										slot="trigger" 
+										slot-scope="props"
+										class="card-header"
+										role="button">
+										<p class="card-header-title">
+											<b-icon icon="circle" :type="group.class" size="is-small"></b-icon> {{ groupName }}
+										</p>
+										<a class="card-header-icon">
+											<b-icon
+												:icon="props.open ? 'menu-down' : 'menu-up'">
+											</b-icon>
+										</a>
+									</div>
+									<div class="card-content">
+										<p v-for="(count, status) in group.statuses">
+											<span v-if="status == 'started'" class="has-text-success">
+												{{ status }} : {{ count }}
+											</span>
+											<span v-else-if="status == 'timedout'" class="has-text-warning">
+												{{ status }} : {{ count }}
+											</span>
+											<span v-else-if="status == 'stopped'" class="has-text-danger">
+												{{ status }} : {{ count }}
+											</span>
+										</p>
+									</div>
+									<footer class="card-footer" v-if="!disabled">
+										<a v-if="group.statuses.started || group.statuses.timedout" class="card-footer-item has-text-danger" title="Suspend all started processes in this group" @click.stop.prevent="$emit('stop-group', groupName)">Suspend all</a>
+										<a v-if="group.statuses.stopped" class="card-footer-item has-text-success" title="Resume all stopped processes in this group" @click.stop.prevent="$emit('start-group', groupName)">Resume all</a>
+									</footer>
+								</b-collapse>
+							</b-dropdown-item>
+						</b-dropdown>
+					</div>
+					<div class="column">
+						<b-dropdown position="is-bottom-left" append-to-body aria-role="menu" can-close expanded>
+							<b-button type="is-primary" slot="trigger" icon-right="menu-down" expanded>
+								Hosts
+							</b-button>
+							<b-dropdown-item
+								aria-role="menu-item"
+								:focusable="false"
+								custom>
+								<b-collapse v-for="(host, hostName) in hostsState" :open="false" class="card" animation="slide">
+									<div
+										slot="trigger" 
+										slot-scope="props"
+										class="card-header"
+										role="button">
+										<p class="card-header-title">
+											<b-icon icon="circle" :type="host.class" size="is-small"></b-icon> {{ hostName }}
+										</p>
+										<a class="card-header-icon">
+											<b-icon
+												:icon="props.open ? 'menu-down' : 'menu-up'">
+											</b-icon>
+										</a>
+									</div>
+									<div class="card-content">
+										<p v-for="(count, status) in host.statuses">
+											<span v-if="status == 'started'" class="has-text-success">
+												{{ status }} : {{ count }}
+											</span>
+											<span v-else-if="status == 'timedout'" class="has-text-warning">
+												{{ status }} : {{ count }}
+											</span>
+											<span v-else-if="status == 'stopped'" class="has-text-danger">
+												{{ status }} : {{ count }}
+											</span>
+										</p>
+									</div>
+								</b-collapse>
+							</b-dropdown-item>
+						</b-dropdown>
+					</div>
+					<div class="column">
+						<b-dropdown position="is-bottom-left" append-to-body aria-role="menu" can-close expanded>
+							<b-button type="is-primary" slot="trigger" icon-right="menu-down" expanded>
+								Statuses
+							</b-button>
+							<b-dropdown-item
+								aria-role="menu-item"
+								:focusable="false"
+								custom>
+								<div v-for="(count, status) in statusesState">
+									<span v-if="status == 'started'" class="has-text-success">
+										{{ status }} : {{ count }}
+									</span>
+									<span v-else-if="status == 'timedout'" class="has-text-warning">
+										{{ status }} : {{ count }}
+									</span>
+									<span v-else-if="status == 'stopped'" class="has-text-danger">
+										{{ status }} : {{ count }}
+									</span>
+								</div>
+							</b-dropdown-item>
+						</b-dropdown>
+					</div>
+				</div>
+				<div class="columns">
+					<div class="column">
+						<b-button expanded :disabled="disabled || !hasStopped" type="is-success" @click="$emit('start-all')" icon-left="play-circle">Resume all</b-button>
+					</div>
+					<div class="column">
+						<b-button expanded :disabled="disabled || !hasStarted" type="is-danger" @click="$emit('stop-all')" icon-left="pause-circle">Suspend all</b-button>
+					</div>
 				</div>
 			</div>
 		</script>
@@ -130,7 +283,8 @@
 {% endverbatim %}
 const SDA_URLS = {
 	SEARCH: '{{ url('distributed_architecture_admin_search') }}',
-}
+	COMMAND: '{{ url('distributed_architecture_admin_command') }}',
+};
 {% verbatim %}
 
 Vue.config.devtools = true;
@@ -162,9 +316,102 @@ Vue.component('sda-search-bar', {
 	template: '#sda-search-bar'
 });
 
+Vue.component('sda-state', {
+	data: function () {
+		return {};
+	},
+	props: ['processes', 'disabled'],
+	computed: {
+		groupsState: function() {
+			return this.buildGroupsState();
+		},
+		hostsState: function() {
+			return this.buildHostsState();
+		},
+		statusesState: function() {
+			return this.buildStatusesState();
+		},
+		hasStopped: function() {
+			if(!this.processes) {
+				return false;
+			}
+			return this.processes.some((process) => {
+				return (process.status == 'stopped');
+			});
+		},
+		hasStarted: function() {
+			if(!this.processes) {
+				return false;
+			}
+			return this.processes.some((process) => {
+				return (process.status == 'started' || process.status == 'timedout');
+			});
+		},
+	},
+	methods: {
+		handleEntry(object, name, status) {
+			if(!object[name]) {
+				object[name] = {
+					class: '',
+					statuses: {}
+				}
+			}
+			if(!object[name].statuses[status]) {
+				object[name].statuses[status] = 1;
+			}
+			else {
+				object[name].statuses[status]++;
+			}
+
+			if((object[name].statuses.started && 
+				object[name].statuses.stopped) ||
+				object[name].statuses.timedout) {
+				
+				object[name].class = 'is-warning';
+			}
+			else if(object[name].statuses.started) {
+				object[name].class = 'is-success';
+			}
+			else if(object[name].statuses.stopped) {
+				object[name].class = 'is-danger';
+			}
+		},
+		buildGroupsState: function() {
+			var groupsState = {};
+			this.processes.forEach((process) => {
+				this.handleEntry(groupsState, process.groupName, process.status);
+			});
+
+			return groupsState;
+		},
+		buildHostsState: function() {
+			var hostsState = {};
+			this.processes.forEach((process) => {
+				this.handleEntry(hostsState, process.host, process.status);
+			});
+			return hostsState;
+		},
+		buildStatusesState: function() {
+			var statusesState = {};
+			this.processes.forEach((process) => {
+				if(!statusesState[process.status]) {
+					statusesState[process.status] = 1;
+				}
+				else {
+					statusesState[process.status]++;
+				}
+			});
+			return statusesState;
+		}
+	},
+	template: '#sda-state'
+});
+
 sda_app = new Vue({
 	data: function () {
 		return {
+			allProcessesTimer: null,
+			processesTimer: null,
 			search: {
 				status: '',
 				group: '',
@@ -178,6 +425,7 @@ sda_app = new Vue({
 			processes: null,
 			total: 0,
 			loading: false,
+			allProcesses: null,
 		};
 	},
 	computed: {
@@ -188,14 +436,133 @@ sda_app = new Vue({
 			set: function(page) {
 				this.search.offset = (page - 1) * this.search.limit;
 			}
+		},
+		filteredAllProcesses: function() {
+			if(!this.allProcesses) {
+				return null;
+			}
+			return this.allProcesses.filter((process) => {
+				return (process.groupName != 'gda::master' && process.groupName != 'gda::master::remote');
+			});
+		},
+		isMasterRunning: function() {
+			if(!this.allProcesses) {
+				return false;
+			}
+			var masterProcess = this.allProcesses.find(process => process.groupName == 'gda::master');
+			return (masterProcess.status === 'started');
 		}
 	},
 	methods: {
-		setSearch: function(search) {
-			this.search.group = search.group;
-			this.search.status = search.status;
-			this.search.offset = 0;
-			this.load();
+		stop: function() {
+			this.$buefy.dialog.confirm({
+				title: 'Stop the service',
+				message: 'Are you sure you want to stop the service? You will not be able to restart if from this interface.',
+				confirmText: 'Stop',
+				type: 'is-danger',
+				hasIcon: true,
+				onConfirm: () => {
+					this.$http.post(SDA_URLS.COMMAND, JSON.stringify({'command': 'stop'}))
+					.then(() => {
+						this.$buefy.toast.open('Service is stopping');
+						setTimeout(() => {
+							this.loadAllProcesses();
+							this.load();
+						}, 1000);
+					})
+					.catch((response) => {
+						this.handleError(response);
+					});
+				},
+			});
+		},
+		startAll: function() {
+			this.$buefy.dialog.confirm({
+				title: 'Resume all',
+				message: 'Are you sure you want to resume all suspended processes?',
+				confirmText: 'Resume all',
+				type: 'is-success',
+				hasIcon: true,
+				onConfirm: () => {
+					this.$http.post(SDA_URLS.COMMAND, JSON.stringify({'command': 'start_all'}))
+						.then(() => {
+							this.$buefy.toast.open('All suspended processes are resuming');
+							setTimeout(() => {
+								this.loadAllProcesses();
+								this.load();
+							}, 1000);
+						})
+						.catch((response) => {
+							this.handleError(response);
+						});
+				},
+			});
+		},
+		stopAll: function() {
+			this.$buefy.dialog.confirm({
+				title: 'Suspend all',
+				message: 'Are you sure you want to suppend all running processes?',
+				confirmText: 'Suspend all',
+				type: 'is-danger',
+				hasIcon: true,
+				onConfirm: () => {
+					this.$http.post(SDA_URLS.COMMAND, JSON.stringify({'command': 'stop_all'}))
+						.then(() => {
+							this.$buefy.toast.open('All running processes are being suspended');
+							setTimeout(() => {
+								this.loadAllProcesses();
+								this.load();
+							}, 1000);
+						})
+						.catch((response) => {
+							this.handleError(response);
+						});
+				},
+			});
+		},
+		startGroup: function(name) {
+			this.$buefy.dialog.confirm({
+				title: 'Resume all in '+name,
+				message: 'Are you sure you want to resume all suspended processes in '+name+'?',
+				confirmText: 'Resume all',
+				type: 'is-success',
+				hasIcon: true,
+				onConfirm: () => {
+					this.$http.post(SDA_URLS.COMMAND, JSON.stringify({'command': 'start_group', 'groupName': name}))
+						.then(() => {
+							this.$buefy.toast.open('All suspended processes in '+name+' are resuming');
+							setTimeout(() => {
+								this.loadAllProcesses();
+								this.load();
+							}, 1000);
+						})
+						.catch((response) => {
+							this.handleError(response);
+						});
+				},
+			});
+		},
+		stopGroup: function(name) {
+			this.$buefy.dialog.confirm({
+				title: 'Suspend all in ' + name,
+				message: 'Are you sure you want to suspend all running processes in '+name+'?',
+				confirmText: 'Suspend all',
+				type: 'is-danger',
+				hasIcon: true,
+				onConfirm: () => {
+					this.$http.post(SDA_URLS.COMMAND, JSON.stringify({'command': 'stop_group', 'groupName': name}))
+						.then(() => {
+							this.$buefy.toast.open('All running processes in '+name+' are being suspended');
+							setTimeout(() => {
+								this.loadAllProcesses();
+								this.load();
+							}, 1000);
+						})
+						.catch((response) => {
+							this.handleError(response);
+						});
+				},
+			});
 		},
   		setSort: function(field, order) {
 			this.search.sort = field;
@@ -221,10 +588,49 @@ sda_app = new Vue({
 			}
 			return true;
 		},
-		load: function() {
-			this.loading = true;
-			this.$http.post(SDA_URLS.SEARCH, JSON.stringify(this.search))
-				.then(function(response) {
+		handleError: function(response) {
+			if(response.data) {
+				this.handleResponse(response);
+			}
+			else if(response.statusText) {
+				this.displayMessage(response.statusText);
+			}
+			else {
+				this.displayMessage('Unknown error');
+			}
+		},
+		loadAllProcesses: function() {
+			if(this.allProcessesTimer) {
+				clearTimeout(this.allProcessesTimer);
+				this.allProcessesTimer = null;
+			}
+
+			// We load all processes, we don't want the search
+			this.$http.post(SDA_URLS.SEARCH, JSON.stringify({'sort': '', 'limit': 0}))
+				.then((response)  => {
+					if(!this.handleResponse(response)) {
+						// An error
+						return;
+					}
+					this.allProcesses = response.data.data.processes;
+				})
+				.catch((response) => {
+					this.handleError(response);
+				})
+				.finally(() => {
+					this.allProcessesTimer = setTimeout(() => {
+						this.loadAllProcesses();
+					}, 10000);
+				});
+		},
+		doSearch: function() {
+			if(this.processesTimer) {
+				clearTimeout(this.processesTimer);
+				this.processesTimer = null;
+			}
+
+			return this.$http.post(SDA_URLS.SEARCH, JSON.stringify(this.search))
+				.then((response) => {
 					if(!this.handleResponse(response)) {
 						// An error
 						return;
@@ -243,24 +649,25 @@ sda_app = new Vue({
 					});
 					this.total = response.data.data.total;
 				})
-				.catch(function(response) {
-					if(response.data) {
-						this.handleResponse(response);
-					}
-					else if(response.statusText) {
-						this.displayMessage(response.statusText);
-					}
-					else {
-						this.displayMessage('Unknown error');
-					}
+				.catch((response) => {
+					this.handleError(response);
 				})
-				.finally(function() {
-					this.loading = false;
+				.finally(() => {
+					this.processesTimer = setTimeout(() => {
+						this.doSearch();
+					}, 20000);
 				});
+		},
+		load: function() {
+			this.loading = true;
+			this.doSearch().finally(() => {
+				this.loading = false;
+			});
 		}
 	},
 	mounted: function() {
 		this.load();
+		this.loadAllProcesses();
 	},
 	el: '#app'
 });
