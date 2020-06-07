@@ -9,8 +9,13 @@
 		<link rel="stylesheet" href="https://unpkg.com/buefy/dist/buefy.min.css"/>
 		<link rel="stylesheet" href="https://cdn.materialdesignicons.com/5.3.45/css/materialdesignicons.min.css"/>
 		<script src="https://unpkg.com/buefy/dist/buefy.min.js"></script>
+{% endverbatim %}
+	{% if app.debug %}
+		<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+	{% else %}
 		<script src="https://cdn.jsdelivr.net/npm/vue"></script>
-		<!--script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script-->
+	{% endif %}
+{% verbatim %}
 		<script src="https://cdn.jsdelivr.net/npm/vue-resource"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.26.0/moment-with-locales.min.js"></script>
 		<style type="text/css">
@@ -285,9 +290,11 @@ const SDA_URLS = {
 	SEARCH: '{{ url('distributed_architecture_admin_search') }}',
 	COMMAND: '{{ url('distributed_architecture_admin_command') }}',
 };
+{% if app.debug %}
+Vue.config.devtools = true;
+{% endif %}
 {% verbatim %}
 
-Vue.config.devtools = true;
 Vue.use(Buefy.default);
 
 Vue.component('sda-search-bar', {
