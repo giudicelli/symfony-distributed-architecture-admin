@@ -2,23 +2,33 @@
 
 namespace giudicelli\DistributedArchitectureAdminBundle\Repository;
 
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
+use Doctrine\Persistence\ManagerRegistry;
 use giudicelli\DistributedArchitectureAdminBundle\Controller\Dto\SearchDto;
-use giudicelli\DistributedArchitectureBundle\Repository\ProcessStatusRepository as _ProcessStatusRepository;
+use giudicelli\DistributedArchitectureAdminBundle\Entity\GdaProcessStatus;
 
 /**
  * @author Frédéric Giudicelli
  *
- * {@inheritdoc}
+ * @method null|GdaProcessStatus find($id, $lockMode = null, $lockVersion = null)
+ * @method null|GdaProcessStatus findOneBy(array $criteria, array $orderBy = null)
+ * @method GdaProcessStatus[]    findAll()
+ * @method GdaProcessStatus[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class ProcessStatusRepository extends _ProcessStatusRepository
+class GdaProcessStatusRepository extends ServiceEntityRepository
 {
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, GdaProcessStatus::class);
+    }
+
     /**
      * Return all statuses matching a search.
      *
      * @param SearchDto $search The search
      *
-     * @return null|array<ProcessStatus> The list of matching statuses or null if there is none
+     * @return null|array<GdaProcessStatus> The list of matching statuses or null if there is none
      */
     public function findBySearchRequest(SearchDto $search): ?array
     {
@@ -56,6 +66,29 @@ class ProcessStatusRepository extends _ProcessStatusRepository
             ->getQuery()
             ->getSingleScalarResult()
         ;
+    }
+
+    /**
+     * Delete all the statuses.
+     */
+    public function deleteAll(): void
+    {
+        $this->createQueryBuilder('ps')
+            ->delete()
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+    /**
+     * Update a status.
+     *
+     * @param GdaProcessStatus $processStatus The status to update
+     */
+    public function update(GdaProcessStatus $processStatus): void
+    {
+        $this->getEntityManager()->persist($processStatus);
+        $this->getEntityManager()->flush();
     }
 
     private function buildQuery(SearchDto $search): QueryBuilder

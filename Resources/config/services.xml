@@ -7,10 +7,16 @@
     <services>
         <defaults autowire="true" autoconfigure="true"/>
 
-        <service id="giudicelli\DistributedArchitectureAdminBundle\Repository\ProcessStatusRepository" class="giudicelli\DistributedArchitectureAdminBundle\Repository\ProcessStatusRepository" public="true">
+        <service id="giudicelli\DistributedArchitectureAdminBundle\Repository\GdaProcessStatusRepository" class="giudicelli\DistributedArchitectureAdminBundle\Repository\GdaProcessStatusRepository" public="true">
+        </service>
+
+        <service id="giudicelli\DistributedArchitectureAdminBundle\Repository\GdaMasterCommandRepository" class="giudicelli\DistributedArchitectureAdminBundle\Repository\GdaMasterCommandRepository" public="true">
         </service>
 
         <service id="giudicelli\DistributedArchitectureAdminBundle\Controller\ProcessStateController" class="giudicelli\DistributedArchitectureAdminBundle\Controller\ProcessStateController">
+        </service>
+
+        <service id="giudicelli\DistributedArchitectureAdminBundle\Event\EventsSubscriber" class="giudicelli\DistributedArchitectureAdminBundle\Event\EventsSubscriber">
         </service>
     </services>
 </container>
