@@ -20,7 +20,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  *
  * @author Frédéric Giudicelli
  *
- * IsGranted("ROLE_ADMIN", message="Access denied.").
+ * @IsGranted("ROLE_ADMIN", message="Access denied.").
  */
 class ProcessStateController extends AbstractController
 {
