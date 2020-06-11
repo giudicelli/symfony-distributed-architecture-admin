@@ -38,7 +38,7 @@
 					<div class="tile is-ancestor">
 						<div class="tile is-parent">
 							<div class="tile is-child box">
-								<sda-search-bar v-model="search" @input="load()"></sda-search-bar>
+								<sda-search-bar v-model="search" :processes="allProcesses" @input="load()"></sda-search-bar>
 							</div>
 						</div>
 						<div class="tile is-4 is-parent">
@@ -130,30 +130,65 @@
 
 		<script type="text/x-template" id="sda-search-bar">
 			<div class="columns is-multiline">
-				<div class="column is-3">
-					<b-select v-model="search.status" placeholder="Status" expanded>
-						<option value=""></option>
-						<option value="started">Started</option>
-						<option value="timedout">Timed out</option>
-						<option value="stopped">Stopped</option>
-					</b-select>
+				<div class="column is-10">
+					<div class="columns is-multiline">
+						<div class="column is-6">
+							<b-select v-model="search.status" placeholder="Status" expanded>
+								<option value=""></option>
+								<option value="started">Started</option>
+								<option value="timedout">Timed out</option>
+								<option value="stopped">Stopped</option>
+							</b-select>
+						</div>
+						<div class="column is-6">
+							<b-field>
+								<b-autocomplete
+									v-model="search.group"
+									expanded
+									:data="groupsList"
+									:open-on-focus="true"
+									placeholder="Group"
+									icon="select-group"
+									clearable
+									@select="search.group = $event">
+									<template slot="empty">No results found</template>
+								</b-autocomplete>
+							</b-field>
+						</div>
+						<div class="column is-6">
+							<b-field>
+								<b-autocomplete
+									v-model="search.host"
+									expanded
+									:data="hostsList"
+									:open-on-focus="true"
+									placeholder="Host"
+									icon="server"
+									clearable
+									@select="search.host = $event">
+									<template slot="empty">No results found</template>
+								</b-autocomplete>
+							</b-field>
+						</div>
+						<div class="column is-6">
+							<b-field>
+								<b-autocomplete
+									v-model="search.command"
+									expanded
+									:data="commandsList"
+									:open-on-focus="true"
+									placeholder="Command"
+									icon="bash"
+									clearable
+									@select="search.command = $event">
+									<template slot="empty">No results found</template>
+								</b-autocomplete>
+							</b-field>
+						</div>
+					</div>
+
 				</div>
-				<div class="column is-3">
-					<b-field>
-						<b-input v-model="search.group" placeholder="Group" type="search" icon="select-group" expanded></b-input>
-					</b-field>
-				</div>
-				<div class="column is-3">
-					<b-field>
-						<b-input v-model="search.host" placeholder="Host" type="search" icon="server" expanded></b-input>
-					</b-field>
-				</div>
-				<div class="column is-3">
-					<b-field>
-						<b-input v-model="search.command" placeholder="Command" type="search" icon="bash" expanded></b-input>
-					</b-field>
-				</div>
-				<div class="column is-3">
+				<div class="column is-2">
 					<b-button @click="reset()" icon-left="close"></b-button>
 					<b-button @click="$emit('input', search)" type="is-primary" icon-left="magnify"></b-button>
 				</div>
@@ -164,7 +199,7 @@
 			<div>
 				<div class="columns">
 					<div class="column">
-						<b-dropdown position="is-bottom-left" append-to-body aria-role="menu" can-close expanded>
+						<b-dropdown position="is-bottom-left" append-to-body aria-role="menu" can-close expanded ref="groupsList">
 							<b-button type="is-primary" slot="trigger" icon-right="menu-down" expanded>
 								Groups
 							</b-button>
@@ -172,7 +207,7 @@
 								aria-role="menu-item"
 								:focusable="false"
 								custom>
-								<b-collapse v-for="(group, groupName) in groupsState" :open="false" class="card" animation="slide">
+								<b-collapse v-for="(group, groupName) in groupsState" :key="groupName" :open="false" class="card" animation="slide">
 									<div
 										slot="trigger" 
 										slot-scope="props"
@@ -201,8 +236,8 @@
 										</p>
 									</div>
 									<footer class="card-footer" v-if="!disabled">
-										<a v-if="group.statuses.started || group.statuses.timedout" class="card-footer-item has-text-danger" title="Suspend all started processes in this group" @click.stop.prevent="$emit('stop-group', groupName)">Suspend all</a>
-										<a v-if="group.statuses.stopped" class="card-footer-item has-text-success" title="Resume all stopped processes in this group" @click.stop.prevent="$emit('start-group', groupName)">Resume all</a>
+										<a v-if="group.statuses.started || group.statuses.timedout" class="card-footer-item has-text-danger" title="Suspend all started processes in this group" @click.stop.prevent="$refs.groupsList.toggle(); $emit('stop-group', groupName)">Suspend all</a>
+										<a v-if="group.statuses.stopped" class="card-footer-item has-text-success" title="Resume all stopped processes in this group" @click.stop.prevent="$refs.groupsList.toggle(); $emit('start-group', groupName)">Resume all</a>
 									</footer>
 								</b-collapse>
 							</b-dropdown-item>
@@ -217,7 +252,7 @@
 								aria-role="menu-item"
 								:focusable="false"
 								custom>
-								<b-collapse v-for="(host, hostName) in hostsState" :open="false" class="card" animation="slide">
+								<b-collapse v-for="(host, hostName) in hostsState" :key="hostName" :open="false" class="card" animation="slide">
 									<div
 										slot="trigger" 
 										slot-scope="props"
@@ -303,13 +338,60 @@ Vue.component('sda-search-bar', {
 			search: {},
 		};
 	},
-	props: ['value'],
+	props: ['value', 'processes'],
 	watch: {
 		value: function() {
 			this.search = this.value;
 		}
 	},
+	computed: {
+		hostsList: function() {
+			if(!this.processes) {
+				return [];
+			}
+			return this.filteredList('host', this.search.host);
+		},
+		commandsList: function() {
+			if(!this.processes) {
+				return [];
+			}
+			return this.filteredList('command', this.search.command);
+		},
+		groupsList: function() {
+			if(!this.processes) {
+				return [];
+			}
+			return this.filteredList('groupName', this.search.group);
+		},
+	},
 	methods: {
+		filteredList: function (field, filter) {
+			if(!filter) {
+				filter = '';
+			}
+			else {
+				filter = filter.toLowerCase();
+			}
+			return this.processes
+				.filter(function(process) {
+					return process[field]
+						.toString()
+						.toLowerCase()
+						.indexOf(filter) >= 0;
+				})
+				.map(function(process) {
+					return process[field];
+				})
+				.reduce(function(entries, entry) {
+					if(entries.indexOf(entry) == -1) {
+						entries.push(entry);
+					}
+					return entries;
+				}, [])
+				.sort(function(entry1, entry2) {
+					return entry1.localeCompare(entry2);
+				});
+		},
 		reset: function() {
 			this.search = {
 				status: '',
