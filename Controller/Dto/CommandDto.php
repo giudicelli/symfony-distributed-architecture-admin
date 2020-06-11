@@ -2,7 +2,7 @@
 
 namespace giudicelli\DistributedArchitectureAdminBundle\Controller\Dto;
 
-use giudicelli\DistributedArchitectureBundle\Entity\MasterCommand;
+use giudicelli\DistributedArchitectureAdminBundle\Entity\GdaMasterCommand;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -13,11 +13,11 @@ use Symfony\Component\Validator\Constraints as Assert;
 class CommandDto
 {
     const COMMANDS = [
-        MasterCommand::COMMAND_START_ALL,
-        MasterCommand::COMMAND_STOP_ALL,
-        MasterCommand::COMMAND_START_GROUP,
-        MasterCommand::COMMAND_STOP_GROUP,
-        MasterCommand::COMMAND_STOP,
+        GdaMasterCommand::COMMAND_START_ALL,
+        GdaMasterCommand::COMMAND_STOP_ALL,
+        GdaMasterCommand::COMMAND_START_GROUP,
+        GdaMasterCommand::COMMAND_STOP_GROUP,
+        GdaMasterCommand::COMMAND_STOP,
     ];
 
     /**

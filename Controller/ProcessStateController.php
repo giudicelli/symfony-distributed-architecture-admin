@@ -5,8 +5,8 @@ namespace giudicelli\DistributedArchitectureAdminBundle\Controller;
 use giudicelli\DistributedArchitectureAdminBundle\Controller\Dto\CommandDto;
 use giudicelli\DistributedArchitectureAdminBundle\Controller\Dto\SearchDto;
 use giudicelli\DistributedArchitectureAdminBundle\Controller\Http\ApiResponse;
-use giudicelli\DistributedArchitectureAdminBundle\Repository\ProcessStatusRepository;
-use giudicelli\DistributedArchitectureBundle\Repository\MasterCommandRepository;
+use giudicelli\DistributedArchitectureAdminBundle\Repository\GdaMasterCommandRepository;
+use giudicelli\DistributedArchitectureAdminBundle\Repository\GdaProcessStatusRepository;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -20,7 +20,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  *
  * @author Frédéric Giudicelli
  *
- * @IsGranted("ROLE_ADMIN", message="Access denied.").
+ * IsGranted("ROLE_ADMIN", message="Access denied.").
  */
 class ProcessStateController extends AbstractController
 {
@@ -32,8 +32,8 @@ class ProcessStateController extends AbstractController
 
     public function __construct(
         ValidatorInterface $validator,
-        ProcessStatusRepository $processStatusRepository,
-        MasterCommandRepository $masterCommandRepository
+        GdaProcessStatusRepository $processStatusRepository,
+        GdaMasterCommandRepository $masterCommandRepository
     ) {
         $this->validator = $validator;
         $this->processStatusRepository = $processStatusRepository;
