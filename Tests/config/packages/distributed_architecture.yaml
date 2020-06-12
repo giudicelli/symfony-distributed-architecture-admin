@@ -1,0 +1,10 @@
+distributed_architecture:
+  groups:
+    test:
+      command: da:my-command
+      local:
+    test 2:
+      command: da:my-command
+      remote:
+        -
+          hosts: [127.0.0.1]
