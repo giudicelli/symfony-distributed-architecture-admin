@@ -85,29 +85,29 @@ final class EventsSubscriber implements EventSubscriberInterface
 
         switch ($masterCommand->getCommand()) {
             case GdaMasterCommand::COMMAND_START_ALL:
-                $event->getLogger()->notice('Handling command '.$masterCommand->getCommand());
-                $event->getLauncher()->runAll();
+                $event->getLauncher()->getLogger()->notice('Handling command '.$masterCommand->getCommand());
+                $event->getLauncher()->resumeAll();
 
             break;
             case GdaMasterCommand::COMMAND_STOP_ALL:
                 $params = $masterCommand->getParams();
-                $event->getLogger()->notice('Handling command '.$masterCommand->getCommand().' - force:'.!empty($params['force']));
-                $event->getLauncher()->stopAll(!empty($params['force']));
+                $event->getLauncher()->getLogger()->notice('Handling command '.$masterCommand->getCommand().' - force:'.!empty($params['force']));
+                $event->getLauncher()->suspendAll(!empty($params['force']));
 
             break;
             case GdaMasterCommand::COMMAND_START_GROUP:
-                $event->getLogger()->notice('Handling command '.$masterCommand->getCommand().'::'.$masterCommand->getGroupName());
-                $event->getLauncher()->runGroup($masterCommand->getGroupName());
+                $event->getLauncher()->getLogger()->notice('Handling command '.$masterCommand->getCommand().'::'.$masterCommand->getGroupName());
+                $event->getLauncher()->resumeGroup($masterCommand->getGroupName());
 
             break;
             case GdaMasterCommand::COMMAND_STOP_GROUP:
                 $params = $masterCommand->getParams();
-                $event->getLogger()->notice('Handling command '.$masterCommand->getCommand().'::'.$masterCommand->getGroupName().' - force:'.!empty($params['force']));
-                $event->getLauncher()->stopGroup($masterCommand->getGroupName(), !empty($params['force']));
+                $event->getLauncher()->getLogger()->notice('Handling command '.$masterCommand->getCommand().'::'.$masterCommand->getGroupName().' - force:'.!empty($params['force']));
+                $event->getLauncher()->suspendGroup($masterCommand->getGroupName(), !empty($params['force']));
 
             break;
             case GdaMasterCommand::COMMAND_STOP:
-                $event->getLogger()->notice('Handling command '.$masterCommand->getCommand());
+                $event->getLauncher()->getLogger()->notice('Handling command '.$masterCommand->getCommand());
                 $event->getLauncher()->stop();
 
             break;

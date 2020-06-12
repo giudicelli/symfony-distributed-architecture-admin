@@ -13,7 +13,7 @@
     "require": {
         "php": ">=7.2.5",
         "psr/log": "~1.0",
-        "giudicelli/symfony-distributed-architecture": ">=0.3.0",
+        "giudicelli/symfony-distributed-architecture": ">=0.4.0",
         "symfony/http-kernel": "^5",
         "symfony/dependency-injection": "^5",
         "symfony/framework-bundle": "^5",
