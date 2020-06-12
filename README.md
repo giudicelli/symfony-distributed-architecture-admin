@@ -1,5 +1,5 @@
 
-# symfony-distributed-architecture-admin
+# symfony-distributed-architecture-admin ![CI](https://github.com/giudicelli/symfony-distributed-architecture-admin/workflows/CI/badge.svg)
 
 Symfony Distributed Architecture Admin is a Symfony bundle. It provides an administration interface for [symfony-distributed-architecture](https://github.com/giudicelli/symfony-distributed-architecture).
 
