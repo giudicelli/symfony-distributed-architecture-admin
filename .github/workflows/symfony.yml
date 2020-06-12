@@ -10,7 +10,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Setup PHP Action
-      uses: shivammathur/setup-php@2.0.0
+      uses: shivammathur/setup-php@verbose
       with:
         php-version: '7.3'
         tools: pecl, composer:v1
