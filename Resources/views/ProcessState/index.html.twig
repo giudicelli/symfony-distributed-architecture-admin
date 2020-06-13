@@ -346,26 +346,20 @@ Vue.component('sda-search-bar', {
 	},
 	computed: {
 		hostsList: function() {
-			if(!this.processes) {
-				return [];
-			}
 			return this.filteredList('host', this.search.host);
 		},
 		commandsList: function() {
-			if(!this.processes) {
-				return [];
-			}
 			return this.filteredList('command', this.search.command);
 		},
 		groupsList: function() {
-			if(!this.processes) {
-				return [];
-			}
 			return this.filteredList('groupName', this.search.group);
 		},
 	},
 	methods: {
 		filteredList: function (field, filter) {
+			if(!this.processes) {
+				return [];
+			}
 			if(!filter) {
 				filter = '';
 			}
@@ -701,6 +695,10 @@ sda_app = new Vue({
 						// An error
 						return;
 					}
+					if(!response.data.data.processes || !response.data.data.processes.length) {
+						this.allProcesses = null;
+						return;
+					}
 					this.allProcesses = response.data.data.processes;
 				})
 				.catch((response) => {
@@ -722,6 +720,10 @@ sda_app = new Vue({
 				.then((response) => {
 					if(!this.handleResponse(response)) {
 						// An error
+						return;
+					}
+					if(!response.data.data.processes || !response.data.data.processes.length) {
+						this.processes = null;
 						return;
 					}
 					this.processes = response.data.data.processes.map(function(process) {
