@@ -78,6 +78,7 @@ class GdaProcessStatusRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult()
         ;
+        $this->getEntityManager()->getUnitOfWork()->clear(GdaProcessStatus::class);
     }
 
     /**

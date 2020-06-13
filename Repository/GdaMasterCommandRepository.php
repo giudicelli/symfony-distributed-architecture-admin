@@ -31,6 +31,7 @@ class GdaMasterCommandRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult()
         ;
+        $this->getEntityManager()->getUnitOfWork()->clear(GdaMasterCommand::class);
     }
 
     /**
