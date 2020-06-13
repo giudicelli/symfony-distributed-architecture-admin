@@ -43,6 +43,8 @@ class GdaMasterCommandRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('mc')
             ->andWhere('mc.status = :status')
             ->setParameter('status', GdaMasterCommand::STATUS_PENDING)
+            ->setMaxResults(1)
+            ->orderBy('mc.id', 'asc')
             ->getQuery()
             ->getOneOrNullResult()
         ;
