@@ -3,6 +3,10 @@
 
 Symfony Distributed Architecture Admin is a Symfony bundle. It provides an administration interface for [symfony-distributed-architecture](https://github.com/giudicelli/symfony-distributed-architecture).
 
+![](https://github.com/giudicelli/symfony-distributed-architecture-admin/raw/master/docs/cap1.png)
+
+![](https://github.com/giudicelli/symfony-distributed-architecture-admin/raw/master/docs/cap2.png)
+
 ## Installation
 
 ```bash
