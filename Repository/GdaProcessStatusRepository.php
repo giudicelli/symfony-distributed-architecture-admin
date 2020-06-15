@@ -34,12 +34,6 @@ class GdaProcessStatusRepository extends ServiceEntityRepository
     {
         $query = $this->buildQuery($search);
 
-        if ($search->getLimit()) {
-            $query
-                ->setMaxResults($search->getLimit())
-                ->setFirstResult($search->getOffset())
-            ;
-        }
         if ($search->getSort()) {
             $query
                 ->orderBy('ps.'.$search->getSort(), $search->getDirection())
@@ -49,22 +43,6 @@ class GdaProcessStatusRepository extends ServiceEntityRepository
         return $query
             ->getQuery()
             ->getResult()
-        ;
-    }
-
-    /**
-     * Return the total number of statuses matching a search.
-     *
-     * @param SearchDto $search The search
-     *
-     * @return int The number of statuses
-     */
-    public function countBySearchRequest(SearchDto $search): int
-    {
-        return $this->buildQuery($search)
-            ->select('count(ps.id)')
-            ->getQuery()
-            ->getSingleScalarResult()
         ;
     }
 

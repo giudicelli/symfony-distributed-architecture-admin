@@ -57,10 +57,7 @@ class ProcessStateController extends AbstractController
         $search = $this->container->get('serializer')->deserialize($request->getContent(), SearchDto::class, 'json', $options);
 
         return $this->json(
-            [
-                'processes' => $this->processStatusRepository->findBySearchRequest($search),
-                'total' => $this->processStatusRepository->countBySearchRequest($search),
-            ]
+            $this->processStatusRepository->findBySearchRequest($search)
         );
     }
 

@@ -12,6 +12,7 @@ use giudicelli\DistributedArchitectureBundle\Event\MasterRunningEvent;
 use giudicelli\DistributedArchitectureBundle\Event\MasterStartedEvent;
 use giudicelli\DistributedArchitectureBundle\Event\MasterStartingEvent;
 use giudicelli\DistributedArchitectureBundle\Event\MasterStoppedEvent;
+use giudicelli\DistributedArchitectureBundle\Event\ProcessCreatedEvent;
 use giudicelli\DistributedArchitectureBundle\Event\ProcessRunningEvent;
 use giudicelli\DistributedArchitectureBundle\Event\ProcessStartedEvent;
 use giudicelli\DistributedArchitectureBundle\Event\ProcessStoppedEvent;
@@ -41,6 +42,7 @@ final class EventsSubscriber implements EventSubscriberInterface
             MasterStartedEvent::NAME => [['onMasterStarted', 15]],
             MasterRunningEvent::NAME => [['onMasterRunning', 15]],
             MasterStoppedEvent::NAME => [['onMasterStopped', 15]],
+            ProcessCreatedEvent::NAME => [['onProcessCreated', 15]],
             ProcessStartedEvent::NAME => [['onProcessStarted', 15]],
             ProcessRunningEvent::NAME => [['onProcessRunning', 15]],
             ProcessTimedOutEvent::NAME => [['onProcessTimedOut', 15]],
@@ -130,6 +132,12 @@ final class EventsSubscriber implements EventSubscriberInterface
         $this->processStatusRepository->update($masterStatus);
     }
 
+    public function onProcessCreated(ProcessCreatedEvent $event): void
+    {
+        $processStatus = $this->getGdaProcessStatus($event->getProcess());
+        $this->processStatusRepository->update($processStatus);
+    }
+
     public function onProcessStarted(ProcessStartedEvent $event): void
     {
         $processStatus = $this->getGdaProcessStatus($event->getProcess());
@@ -154,8 +162,10 @@ final class EventsSubscriber implements EventSubscriberInterface
     public function onProcessStopped(ProcessStoppedEvent $event): void
     {
         $processStatus = $this->getGdaProcessStatus($event->getProcess());
-        $processStatus->setStoppedAt(new \DateTime());
-        $processStatus->setStatus('stopped');
+        $processStatus
+            ->setStoppedAt(new \DateTime())
+            ->setStatus('stopped')
+        ;
 
         $this->processStatusRepository->update($processStatus);
     }
@@ -163,8 +173,11 @@ final class EventsSubscriber implements EventSubscriberInterface
     public function onProcessRunning(ProcessRunningEvent $event): void
     {
         $processStatus = $this->getGdaProcessStatus($event->getProcess());
-        $processStatus->setLastSeenAt(new \DateTime());
-        $processStatus->setOutput($event->getLine());
+        $processStatus
+            ->setStatus('started')
+            ->setLastSeenAt(new \DateTime())
+            ->setOutput($event->getLine())
+        ;
 
         $this->processStatusRepository->update($processStatus);
     }
@@ -187,6 +200,7 @@ final class EventsSubscriber implements EventSubscriberInterface
                 ->setGroupName($process->getGroupConfig()->getName())
                 ->setHost(gethostname())
                 ->setCommand($process->getDisplay())
+                ->setStatus('stopped')
             ;
         }
 
@@ -212,7 +226,7 @@ final class EventsSubscriber implements EventSubscriberInterface
                 ->setGroupId(0)
                 ->setGroupName($launcher->isMaster() ? 'gda::master' : 'gda::master::remote')
                 ->setHost(gethostname())
-                ->setCommand('')
+                ->setCommand('Launcher command')
                 ->setStartedAt(new \DateTime())
                 ->setLastSeenAt(new \DateTime())
                 ->setStatus('started')

@@ -17,10 +17,6 @@ class SearchDto
 
     private $status;
 
-    private $offset = 0;
-
-    private $limit = 20;
-
     private $sort = 'id';
 
     private $direction = 'asc';
@@ -69,30 +65,6 @@ class SearchDto
     public function setStatus(string $status): self
     {
         $this->status = $status;
-
-        return $this;
-    }
-
-    public function getOffset(): ?int
-    {
-        return $this->offset;
-    }
-
-    public function setOffset(?int $offset): self
-    {
-        $this->offset = $offset;
-
-        return $this;
-    }
-
-    public function getLimit(): ?int
-    {
-        return $this->limit;
-    }
-
-    public function setLimit(?int $limit): self
-    {
-        $this->limit = $limit > 50 ? 50 : $limit;
 
         return $this;
     }

@@ -25,6 +25,30 @@
 			.dropdown.is-expanded .dropdown-menu {
 				width: 300px;				
 			}
+			.border-danger {
+				border: 1px solid #ff3860;
+			}
+			.border-warning {
+				border: 1px solid #ffdd57;
+			}
+			.border-success {
+				border: 1px solid #23d160;
+			}
+			.sda-graph-subgroup > .box {
+				background-color: #f5f5f5;
+			}
+			.sda-graph-subgroup:not(:last-child) {
+				margin-bottom: 1em;
+			}
+			.sda-graph-process {
+				cursor: pointer;
+			}
+			.sda-graph-process:not(:last-child) {
+				margin-bottom: 0.5em;
+			}
+			.sda-graph-process.selected {
+				font-weight: bold;
+			}
 		</style>
 	</head>
 	<body>
@@ -53,77 +77,83 @@
 						</div>
 					</div>
 
-					<b-table :data="processes ? processes : []" :bordered="true" :striped="true"
-						:narrowed="false" :hoverable="true" :loading="loading" :mobile-cards="true" :paginated="true"
-						:total="total" :backend-pagination="true" :backend-sorting="true"
-						:per-page="search.limit" :current-page.sync="currentPage"
-						:default-sort-direction="search.direction" :default-sort="search.sort"
-						aria-next-label="Next page" aria-previous-label="Previous page"
-						aria-page-label="Page" aria-current-label="Current page" @sort="setSort"
-						@page-change="load()">
-						<template slot-scope="props">
+					<b-tabs>
+			            <b-tab-item label="List">
+							<b-table :data="processes ? processes : []" :bordered="true" :striped="true"
+								:narrowed="false" :hoverable="true" :loading="loading" :mobile-cards="true" :paginated="true"
+								:total="processes ? processes.length : 0" :backend-pagination="false" :backend-sorting="true"
+								:per-page="20" :current-page.sync="currentPage"
+								:default-sort-direction="search.direction" :default-sort="search.sort"
+								aria-next-label="Next page" aria-previous-label="Previous page"
+								aria-page-label="Page" aria-current-label="Current page" @sort="setSort">
+								<template slot-scope="props">
 
-							<b-table-column field="id" label="ID" width="40" sortable numeric>
-							{{ props.row.id }}
-							</b-table-column>
+									<b-table-column field="id" label="ID" width="40" sortable numeric>
+									{{ props.row.id }}
+									</b-table-column>
 
-							<b-table-column field="groupName" label="Group" width="80" sortable>
-							{{ props.row.groupName }}
+									<b-table-column field="groupName" label="Group" width="80" sortable>
+									{{ props.row.groupName }}
 
-							</b-table-column>
-							<b-table-column field="groupId" label="Group ID" sortable numeric>
-							{{ props.row.groupId }}
-							</b-table-column>
+									</b-table-column>
+									<b-table-column field="groupId" label="Group ID" sortable numeric>
+									{{ props.row.groupId }}
+									</b-table-column>
 
-							<b-table-column field="host" label="Host" sortable>
-							{{ props.row.host }}
-							</b-table-column>
+									<b-table-column field="host" label="Host" sortable>
+									{{ props.row.host }}
+									</b-table-column>
 
-							<b-table-column field="command" label="Command" sortable>
-							{{ props.row.command }}
-							</b-table-column>
+									<b-table-column field="command" label="Command" sortable>
+									{{ props.row.command }}
+									</b-table-column>
 
-							<b-table-column field="startedAt" label="Start time" sortable>
-							{{ props.row.startedAt }}
-							</b-table-column>
+									<b-table-column field="startedAt" label="Start time" sortable>
+									{{ props.row.startedAt }}
+									</b-table-column>
 
-							<b-table-column field="stoppedAt" label="Stop time" sortable>
-							{{ props.row.stoppedAt }}
-							</b-table-column>
+									<b-table-column field="stoppedAt" label="Stop time" sortable>
+									{{ props.row.stoppedAt }}
+									</b-table-column>
 
-							<b-table-column field="lastSeenAt" label="Last seen time" sortable>
-							{{ props.row.lastSeenAt }}
-							</b-table-column>
+									<b-table-column field="lastSeenAt" label="Last seen time" sortable>
+									{{ props.row.lastSeenAt }}
+									</b-table-column>
 
-							<b-table-column field="output" label="Last output">
-							{{ props.row.output }}
-							</b-table-column>
+									<b-table-column field="output" label="Last output">
+										{{ props.row.output }}
+									</b-table-column>
 
-							<b-table-column field="status" label="Status" sortable>
-								<b-tag v-if="props.row.status == 'started'" type="is-success">
-									{{ props.row.status }}
-								</b-tag>
-								<b-tag v-else-if="props.row.status == 'timedout'" type="is-warning">
-									{{ props.row.status }}
-								</b-tag>
-								<b-tag v-else-if="props.row.status == 'stopped'" type="is-danger">
-									{{ props.row.status }}
-								</b-tag>
-							</b-table-column>
-						</template>
+									<b-table-column field="status" label="Status" sortable>
+										<b-tag v-if="props.row.status === 'started'" type="is-success">
+											{{ props.row.status }}
+										</b-tag>
+										<b-tag v-else-if="props.row.status === 'timedout'" type="is-warning">
+											{{ props.row.status }}
+										</b-tag>
+										<b-tag v-else-if="props.row.status === 'stopped'" type="is-danger">
+											{{ props.row.status }}
+										</b-tag>
+									</b-table-column>
+								</template>
 
-						<template slot="empty">
-							<section class="section">
-							<div class="content has-text-grey has-text-centered">
-								<p>
-								<b-icon icon="emoticon-sad" size="is-large">
-								</b-icon>
-								</p>
-								<p>Nothing here.</p>
-							</div>
-							</section>
-						</template>
-					</b-table>
+								<template slot="empty">
+									<section class="section">
+									<div class="content has-text-grey has-text-centered">
+										<p>
+										<b-icon icon="emoticon-sad" size="is-large">
+										</b-icon>
+										</p>
+										<p>Nothing here.</p>
+									</div>
+									</section>
+								</template>
+							</b-table>
+			            </b-tab-item>
+			            <b-tab-item label="Grouped">
+							<sda-graph :processes="processes"></sda-graph>
+			            </b-tab-item>
+					</b-tabs>
 	        	</div>
 			</div>
 		</section>
@@ -224,13 +254,13 @@
 									</div>
 									<div class="card-content">
 										<p v-for="(count, status) in group.statuses">
-											<span v-if="status == 'started'" class="has-text-success">
+											<span v-if="status === 'started'" class="has-text-success">
 												{{ status }} : {{ count }}
 											</span>
-											<span v-else-if="status == 'timedout'" class="has-text-warning">
+											<span v-else-if="status === 'timedout'" class="has-text-warning">
 												{{ status }} : {{ count }}
 											</span>
-											<span v-else-if="status == 'stopped'" class="has-text-danger">
+											<span v-else-if="status === 'stopped'" class="has-text-danger">
 												{{ status }} : {{ count }}
 											</span>
 										</p>
@@ -269,13 +299,13 @@
 									</div>
 									<div class="card-content">
 										<p v-for="(count, status) in host.statuses">
-											<span v-if="status == 'started'" class="has-text-success">
+											<span v-if="status === 'started'" class="has-text-success">
 												{{ status }} : {{ count }}
 											</span>
-											<span v-else-if="status == 'timedout'" class="has-text-warning">
+											<span v-else-if="status === 'timedout'" class="has-text-warning">
 												{{ status }} : {{ count }}
 											</span>
-											<span v-else-if="status == 'stopped'" class="has-text-danger">
+											<span v-else-if="status === 'stopped'" class="has-text-danger">
 												{{ status }} : {{ count }}
 											</span>
 										</p>
@@ -294,13 +324,13 @@
 								:focusable="false"
 								custom>
 								<div v-for="(count, status) in statusesState">
-									<span v-if="status == 'started'" class="has-text-success">
+									<span v-if="status === 'started'" class="has-text-success">
 										{{ status }} : {{ count }}
 									</span>
-									<span v-else-if="status == 'timedout'" class="has-text-warning">
+									<span v-else-if="status === 'timedout'" class="has-text-warning">
 										{{ status }} : {{ count }}
 									</span>
-									<span v-else-if="status == 'stopped'" class="has-text-danger">
+									<span v-else-if="status === 'stopped'" class="has-text-danger">
 										{{ status }} : {{ count }}
 									</span>
 								</div>
@@ -314,6 +344,135 @@
 					</div>
 					<div class="column">
 						<b-button expanded :disabled="disabled || !hasStarted" type="is-danger" @click="$emit('stop-all')" icon-left="pause-circle">Suspend all</b-button>
+					</div>
+				</div>
+			</div>
+		</script>
+
+		<script type="text/x-template" id="sda-graph-process-details">
+			<div>
+				<div v-if="process" class="box">
+					<div :class="'subtitle is-size-6 has-text-weight-bold has-text-'+color">
+						[{{ process.status }}] {{ process.command }}
+					</div> 
+					<div class="columns">
+						<div class="column is-4 has-text-weight-bold">
+							ID
+						</div>
+						<div class="column">
+							{{ process.id }}
+						</div>
+					</div>
+					<div class="columns">
+						<div class="column is-4 has-text-weight-bold">
+							Group
+						</div>
+						<div class="column">
+							{{ process.groupName }}
+						</div>
+					</div>
+					<div class="columns">
+						<div class="column is-4 has-text-weight-bold">
+							Group ID
+						</div>
+						<div class="column">
+							{{ process.groupId }}
+						</div>
+					</div>
+					<div class="columns">
+						<div class="column is-4 has-text-weight-bold">
+							Started
+						</div>
+						<div class="column">
+							{{ process.startedAt }}
+						</div>
+					</div>
+					<div class="columns">
+						<div class="column is-4 has-text-weight-bold">
+							Last seen
+						</div>
+						<div class="column">
+							{{ process.lastSeenAt }}
+						</div>
+					</div>
+					<div class="columns" v-if="process.status === 'stopped'">
+						<div class="column is-4 has-text-weight-bold">
+							Stopped
+						</div>
+						<div class="column">
+							{{ process.stoppedAt }}
+						</div>
+					</div>
+					<div class="columns" v-if="process.output">
+						<div class="column is-4 has-text-weight-bold">
+							Last output
+						</div>
+						<div class="column">
+							{{ process.output }}
+						</div>
+					</div>
+				</div>
+			</div>
+		</script>
+
+		<script type="text/x-template" id="sda-graph">
+			<div>
+				<div class="columns">
+					<div class="column is-3">
+						<b-field label="Group by" label-position="on-border">
+							<b-select v-model="groupBy" expanded>
+								<option :value="1">Host + Group</option>
+								<option :value="2">Group + Host</option>
+							</b-select>
+						</b-field>
+					</div>
+					<div class="column is-3">
+						<b-field label="Sort by" label-position="on-border">
+							<b-select v-model="sortBy" expanded>
+								<option :value="1">Name ASC</option>
+								<option :value="2">Name DESC</option>
+								<option :value="3">Size ASC</option>
+								<option :value="4">Size DESC</option>
+							</b-select>
+						</b-field>
+					</div>
+				</div>
+				<hr />
+				<div class="columns" @click="selectProcess(0)">
+					<div class="column">
+						<div class="columns is-multiline">
+							<div class="column is-4" v-for="group in groupedProcesses">
+								<sda-graph-group :group="group" @select="selectProcess($event)"></sda-graph-group>
+							</div>
+						</div>
+					</div>
+					<div class="column is-3">
+						<sda-graph-process-details :process="selectedProcess"></sda-graph-process-details>
+					</div>
+				</div>
+			</div>
+		</script>
+
+		<script type="text/x-template" id="sda-graph-group">
+			<div class="sda-graph-group">
+				<div class="has-text-centered has-text-weight-bold">
+					{{ group.name }}
+				</div>
+				<div :class="'box border-' + color">				
+					<sda-graph-subgroup v-for="(subgroup, name) in group.children" :key="group.name + '-' + name" :group="subgroup" @select="$emit('select', $event)"></sda-graph-subgroup>
+				</div>
+			</div>
+		</script>
+
+		<script type="text/x-template" id="sda-graph-subgroup">
+			<div class="sda-graph-subgroup">
+				<div class="has-text-centered has-text-weight-bold">
+					{{ group.name }}
+				</div>
+				<div :class="'box border-' + color">
+					<div v-for="process in group.processes" :class="{'sda-graph-process': true, 'selected': process.selected}" @click.stop="$emit('select', process.id)">
+						<b-icon icon="circle" size="is-small" :type="{'is-danger': process.status === 'stopped' || process.status === 'error', 'is-success': process.status === 'started', 'is-warning': process.status === 'timedout' || process.status === 'stopping'}"></b-icon>
+						{{ process.command }}
 					</div>
 				</div>
 			</div>
@@ -377,7 +536,7 @@ Vue.component('sda-search-bar', {
 					return process[field];
 				})
 				.reduce(function(entries, entry) {
-					if(entries.indexOf(entry) == -1) {
+					if(entries.indexOf(entry) === -1) {
 						entries.push(entry);
 					}
 					return entries;
@@ -419,7 +578,7 @@ Vue.component('sda-state', {
 				return false;
 			}
 			return this.processes.some((process) => {
-				return (process.status == 'stopped');
+				return (process.status === 'stopped');
 			});
 		},
 		hasStarted: function() {
@@ -427,7 +586,7 @@ Vue.component('sda-state', {
 				return false;
 			}
 			return this.processes.some((process) => {
-				return (process.status == 'started' || process.status == 'timedout');
+				return (process.status === 'started' || process.status === 'timedout');
 			});
 		},
 	},
@@ -460,7 +619,7 @@ Vue.component('sda-state', {
 			}
 		},
 		buildGroupsState: function() {
-			var groupsState = {};
+			const groupsState = {};
 			this.processes.forEach((process) => {
 				this.handleEntry(groupsState, process.groupName, process.status);
 			});
@@ -468,14 +627,14 @@ Vue.component('sda-state', {
 			return groupsState;
 		},
 		buildHostsState: function() {
-			var hostsState = {};
+			const hostsState = {};
 			this.processes.forEach((process) => {
 				this.handleEntry(hostsState, process.host, process.status);
 			});
 			return hostsState;
 		},
 		buildStatusesState: function() {
-			var statusesState = {};
+			const statusesState = {};
 			this.processes.forEach((process) => {
 				if(!statusesState[process.status]) {
 					statusesState[process.status] = 1;
@@ -490,6 +649,162 @@ Vue.component('sda-state', {
 	template: '#sda-state'
 });
 
+Vue.component('sda-graph-process-details', {
+	props: ['process'],
+	computed: {
+		color: function() {
+			switch(this.process.status) {
+				case 'started':
+					return 'success';
+				case 'stopped':
+				case 'error':
+					return 'danger';
+				case 'timedout':
+				case 'stopping':
+					return 'warning';
+			}
+		}
+	},
+	template: '#sda-graph-process-details'
+});
+
+
+Vue.component('sda-graph-group', {
+	props: ['group'],
+	computed: {
+		color: function() {
+			if(this.group.processes.every(process => ['stopped', 'error'].indexOf(process.status) != -1)) {
+				return 'danger';
+			}
+			else if(this.group.processes.every(process => process.status === 'started')) {
+				return 'success';
+			}
+			return 'warning';
+		}
+	},
+	template: '#sda-graph-group'
+});
+
+Vue.component('sda-graph-subgroup', {
+	extends: Vue.component('sda-graph-group'),
+	props: ['group'],
+	template: '#sda-graph-subgroup'
+});
+
+Vue.component('sda-graph', {
+	data: function () {
+		return {
+			selectedProcessId: 0,
+			groupBy: 1,
+			sortBy: 1,
+		};
+	},
+	props: ['processes'],
+	computed: {
+		groupedProcesses: function() {
+			return this.groupProcesses();
+		},
+		selectedProcess: function() {
+			if(!this.selectedProcessId) {
+				return null;
+			}
+			return this.processes.find(process => process.id === this.selectedProcessId);
+		},
+		group1: function() {
+			switch(this.groupBy) {
+				case 1:
+					return 'host';
+				case 2:
+					return 'groupName';
+			}
+		},
+		group2: function() {
+			switch(this.groupBy) {
+				case 1:
+					return 'groupName';
+				case 2:
+					return 'host';
+			}
+		}
+	},
+	methods: {
+		selectProcess: function(id) {
+			this.selectedProcessId = id;
+		},
+		sortGroup(group1, group2) {
+			switch(this.sortBy) {
+				case 1:
+					if(group1.name === group2.name) {
+						return group1.processes.length - group2.processes.length;
+					}
+					return group1.name.localeCompare(group2.name);
+				case 2:
+					if(group1.name === group2.name) {
+						return group2.processes.length - group1.processes.length;
+					}
+					return group2.name.localeCompare(group1.name);
+				case 3:
+					if(group1.processes.length === group2.processes.length) {
+						return group1.name.localeCompare(group2.name);
+					}
+					return group1.processes.length - group2.processes.length;
+				case 4:
+					if(group1.processes.length === group2.processes.length) {
+						return group1.name.localeCompare(group2.name);
+					}
+					return group2.processes.length - group1.processes.length;
+			}
+		},
+		groupProcesses() {
+			if(!this.processes || !this.processes.length) {
+				return null;
+			}
+			const groups = [];
+			this.processes.forEach((process) => {
+				const key1  = process[this.group1];
+				const key2  = process[this.group2];
+				let group = groups.find(cgroup => cgroup.name === key1);
+				if(!group) {
+					group = {
+						name: key1,
+						class: this.group1,
+						processes: [process],
+						children: []
+					};
+					groups.push(group);
+					groups.sort((group1, group2) => this.sortGroup(group1, group2));
+				}
+				else {
+					group.processes.push(process);
+				}
+
+				let subgroup = group.children.find(cgroup => cgroup.name === key2);
+				if(!subgroup) {
+					subgroup = {
+						name: key2,
+						class: this.group2,
+						processes: [{
+							...process,
+							selected: process.id === this.selectedProcessId
+						}],
+					};
+					group.children.push(subgroup);
+					group.children.sort((subgroup1, subgroup2) => this.sortGroup(subgroup1, subgroup2));
+				}
+				else {
+					subgroup.processes.push({
+						...process,
+						selected: process.id === this.selectedProcessId
+					});
+				}
+				subgroup.processes.sort((process1, process2) => process1.id - process2.id);
+			});
+			return groups;
+		},
+	},
+	template: '#sda-graph'
+});
+
 sda_app = new Vue({
 	data: function () {
 		return {
@@ -500,26 +815,16 @@ sda_app = new Vue({
 				group: '',
 				host: '',
 				command: '',
-				offset: 0,
-				limit: 20,
 				sort: 'id',
 				direction: 'asc',
 			},
 			processes: null,
-			total: 0,
 			loading: false,
 			allProcesses: null,
+			currentPage: 1,
 		};
 	},
 	computed: {
-		currentPage: {
-			get: function() {
-			    return (this.search.offset / this.search.limit) + 1;
-			},
-			set: function(page) {
-				this.search.offset = (page - 1) * this.search.limit;
-			}
-		},
 		filteredAllProcesses: function() {
 			if(!this.allProcesses) {
 				return null;
@@ -532,7 +837,10 @@ sda_app = new Vue({
 			if(!this.allProcesses) {
 				return false;
 			}
-			var masterProcess = this.allProcesses.find(process => process.groupName == 'gda::master');
+			const masterProcess = this.allProcesses.find(process => process.groupName === 'gda::master');
+			if(!masterProcess) {
+				return false;
+			}
 			return (masterProcess.status === 'started');
 		}
 	},
@@ -689,17 +997,17 @@ sda_app = new Vue({
 			}
 
 			// We load all processes, we don't want the search
-			this.$http.post(SDA_URLS.SEARCH, JSON.stringify({'sort': '', 'limit': 0}))
+			this.$http.post(SDA_URLS.SEARCH, JSON.stringify({'sort': ''}))
 				.then((response)  => {
 					if(!this.handleResponse(response)) {
 						// An error
 						return;
 					}
-					if(!response.data.data.processes || !response.data.data.processes.length) {
+					if(!response.data.data || !response.data.data.length) {
 						this.allProcesses = null;
 						return;
 					}
-					this.allProcesses = response.data.data.processes;
+					this.allProcesses = response.data.data;
 				})
 				.catch((response) => {
 					this.handleError(response);
@@ -722,11 +1030,11 @@ sda_app = new Vue({
 						// An error
 						return;
 					}
-					if(!response.data.data.processes || !response.data.data.processes.length) {
+					if(!response.data.data || !response.data.data.length) {
 						this.processes = null;
 						return;
 					}
-					this.processes = response.data.data.processes.map(function(process) {
+					this.processes = response.data.data.map((process) => {
 						if(process.startedAt) {
 							process.startedAt = moment(process.startedAt).format('LLLL');
 						}
@@ -738,7 +1046,6 @@ sda_app = new Vue({
 						}
 						return process;
 					});
-					this.total = response.data.data.total;
 				})
 				.catch((response) => {
 					this.handleError(response);
@@ -751,10 +1058,11 @@ sda_app = new Vue({
 		},
 		load: function() {
 			this.loading = true;
+			this.currentPage = 1;
 			this.doSearch().finally(() => {
 				this.loading = false;
 			});
-		}
+		},
 	},
 	mounted: function() {
 		this.load();
