@@ -2,9 +2,8 @@
 
 namespace giudicelli\DistributedArchitectureAdminBundle\Tests;
 
+use giudicelli\DistributedArchitecture\Slave\HandlerInterface;
 use giudicelli\DistributedArchitectureBundle\Command\AbstractSlaveCommand;
-use giudicelli\DistributedArchitectureBundle\Handler;
-use Psr\Log\LoggerInterface;
 
 /**
  * @author Frédéric Giudicelli
@@ -18,9 +17,8 @@ class MyCommand extends AbstractSlaveCommand
         $this->setDescription('Launch the slave test command');
     }
 
-    protected function runSlave(?Handler $handler, ?LoggerInterface $logger): void
+    protected function runSlave(?HandlerInterface $handler): void
     {
-        $groupConfig = $handler->getGroupConfig();
         echo "Child {$handler->getId()} {$handler->getGroupId()} \n";
 
         while (!$handler->mustStop()) {
